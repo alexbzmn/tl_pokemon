@@ -1,4 +1,4 @@
 FROM openjdk:11
-COPY app/build/libs/pockemon.jar .
+COPY app/build/libs/pokemon.jar .
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "pockemon.jar"]
+ENTRYPOINT ["java", "-jar", "pokemon.jar"]
