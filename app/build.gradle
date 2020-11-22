@@ -30,6 +30,16 @@ shadowJar {
     archiveVersion.set('')
 }
 
+task copyJarToBin(dependsOn:[shadowJar]) {
+    doLast {
+        copy {
+            from 'app/build/libs/pokemon.jar'
+            into "."
+        }
+
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
