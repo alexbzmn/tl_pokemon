@@ -72,6 +72,7 @@ class AppTest {
 			.uri(URI.create(SHAKESPEARE_TRANSLATION_RESOURCE))
 			.POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(Map.of("text", samplePokemonDescription))))
 			.build(), HttpResponse.BodyHandlers.ofString());
+		when(shakespeareResponse.statusCode()).thenReturn(200);
 		when(shakespeareResponse.body()).thenReturn(fileContent("test_response_pokemon_shakespeare_translation.json"));
 
 		// when
@@ -130,6 +131,7 @@ class AppTest {
 			.uri(URI.create(SHAKESPEARE_TRANSLATION_RESOURCE))
 			.POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(Map.of("text", samplePokemonDescription))))
 			.build(), HttpResponse.BodyHandlers.ofString());
+		when(shakespeareResponse.statusCode()).thenReturn(200);
 		when(shakespeareResponse.body()).thenReturn(fileContent("test_response_pokemon_shakespeare_translation.json"));
 
 		// when
@@ -204,6 +206,44 @@ class AppTest {
 		assertEquals(500, result.statusCode());
 		assertEquals("Remote service error, please try later", result.body());
 
+	}
+
+	@Test
+	void should_return_sensible_error_on_translations_service_unavailable() throws Exception {
+
+		// given
+		var pokemonResponse = Mockito.mock(HttpResponse.class);
+		doReturn(pokemonResponse).when(mockedHttpClient).send(HttpRequest.newBuilder()
+			.uri(URI.create(POKEMON_RESOURCE + "charizard"))
+			.GET()
+			.build(), HttpResponse.BodyHandlers.ofString());
+		when(pokemonResponse.statusCode()).thenReturn(200);
+		when(pokemonResponse.body()).thenReturn(fileContent("test_response_pokemon.json"));
+
+		var speciesResponse = Mockito.mock(HttpResponse.class);
+		doReturn(speciesResponse).when(mockedHttpClient).send(HttpRequest.newBuilder()
+			.uri(URI.create("https://pokeapi.co/api/v2/pokemon-species/6/"))
+			.GET()
+			.build(), HttpResponse.BodyHandlers.ofString());
+		when(speciesResponse.body()).thenReturn(fileContent("test_response_pokemon_species.json"));
+
+		var shakespeareResponse = Mockito.mock(HttpResponse.class);
+		doReturn(shakespeareResponse).when(mockedHttpClient).send(HttpRequest.newBuilder()
+			.uri(URI.create(SHAKESPEARE_TRANSLATION_RESOURCE))
+			.POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(Map.of("text", samplePokemonDescription))))
+			.build(), HttpResponse.BodyHandlers.ofString());
+		when(shakespeareResponse.statusCode()).thenReturn(500);
+		when(shakespeareResponse.body()).thenReturn("Internal error");
+
+		// when
+		final var result = client.send(
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/charizard")).GET().build(),
+			HttpResponse.BodyHandlers.ofString());
+
+		// then
+		verify(mockedHttpClient, times(3)).send(any(), any());
+		assertEquals(500, result.statusCode());
+		assertEquals("Translation service is not available", result.body());
 	}
 
 	private String fileContent(String pathString) throws Exception {

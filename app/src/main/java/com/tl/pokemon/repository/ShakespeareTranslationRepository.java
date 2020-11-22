@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tl.pokemon.exception.ServiceIsUnavailableException;
 
 public final class ShakespeareTranslationRepository {
 
@@ -21,11 +22,15 @@ public final class ShakespeareTranslationRepository {
 	}
 
 	public String translate(String from) throws Exception {
-		final var translated = httpClient.send(HttpRequest.newBuilder()
+		final var translationResponse = httpClient.send(HttpRequest.newBuilder()
 			.uri(URI.create(SHAKESPEARE_TRANSLATION_RESOURCE))
 			.POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(Map.of("text", from))))
 			.build(), HttpResponse.BodyHandlers.ofString());
 
-		return mapper.readTree(translated.body()).get("contents").get("translated").asText();
+		if (translationResponse.statusCode() != 200) {
+			throw new ServiceIsUnavailableException("Translation service is not available");
+		}
+
+		return mapper.readTree(translationResponse.body()).get("contents").get("translated").asText();
 	}
 }
