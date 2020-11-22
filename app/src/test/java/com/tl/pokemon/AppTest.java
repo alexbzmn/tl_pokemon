@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tl.pokemon.model.Pokemon;
 
 import static com.tl.pokemon.repository.PokemonRepository.POKEMON_RESOURCE;
 import static com.tl.pokemon.repository.ShakespeareTranslationRepository.SHAKESPEARE_TRANSLATION_RESOURCE;
@@ -26,6 +27,7 @@ class AppTest {
 
 	private static final String samplePokemonDescription = "Charizard flies around the sky in search of powerful opponents.\\nIt breathes fire of such great heat that it melts anything.\\nHowever, it never turns its fiery breath on any opponent\\nweaker than itself.";
 	private static final String sampleShakespeareTranslation = "Charizard flies 'round the sky in search of powerful opponents.\\nit breathes fire of such most wondrous heat yond 't melts aught.\\nhowever,  't nev'r turns its fiery breath on any opponent\\nweaker than itself.";
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	private final HttpClient mockedHttpClient = Mockito.mock(HttpClient.class);
 	private final HttpClient client = HttpClient.newBuilder()
@@ -79,7 +81,7 @@ class AppTest {
 
 		// then
 		assertEquals(200, result.statusCode());
-		assertEquals(sampleShakespeareTranslation, result.body());
+		assertEquals(objectMapper.writeValueAsString(new Pokemon("charizard", sampleShakespeareTranslation)), result.body());
 	}
 
 	@Test
@@ -145,7 +147,7 @@ class AppTest {
 
 		// then
 		assertEquals(200, cachedSecond.statusCode());
-		assertEquals(sampleShakespeareTranslation, cachedSecond.body());
+		assertEquals(objectMapper.writeValueAsString(new Pokemon("charizard", sampleShakespeareTranslation)), cachedSecond.body());
 		verify(mockedHttpClient, times(3)).send(any(), any());
 	}
 

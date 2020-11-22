@@ -10,6 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tl.pokemon.exception.NotFoundException;
 import com.tl.pokemon.exception.ServiceIsUnavailableException;
+import com.tl.pokemon.model.Pokemon;
 import com.tl.pokemon.repository.PokemonRepository;
 import com.tl.pokemon.repository.ShakespeareTranslationRepository;
 
@@ -20,15 +21,16 @@ public final class App {
 
 	private final PokemonRepository pokemonRepository;
 	private final ShakespeareTranslationRepository translationRepository;
+	private final ObjectMapper objectMapper;
 
 	private final Map<String, List<String>> descriptionsCache = new ConcurrentHashMap<>();
 	private final Map<String, String> shakespeareCache = new ConcurrentHashMap<>();
 
 	public App(HttpClient httpClient) {
-		final var mapper = new ObjectMapper();
+		this.objectMapper = new ObjectMapper();
 
-		this.translationRepository = new ShakespeareTranslationRepository(httpClient, mapper);
-		this.pokemonRepository = new PokemonRepository(httpClient, mapper);
+		this.translationRepository = new ShakespeareTranslationRepository(httpClient, objectMapper);
+		this.pokemonRepository = new PokemonRepository(httpClient, objectMapper);
 	}
 
 	public void registerResources() {
@@ -55,9 +57,11 @@ public final class App {
 			}
 
 			final var randomlyPickedDescription = pokemonDescriptions.get(ThreadLocalRandom.current().nextInt(pokemonDescriptions.size()));
-			return shakespeareCache.computeIfAbsent(
+			final var shakespeareDescription = shakespeareCache.computeIfAbsent(
 				randomlyPickedDescription,
 				__ -> runRethrowing(() -> translationRepository.translate(randomlyPickedDescription)));
+
+			return objectMapper.writeValueAsString(new Pokemon(pokemonName, shakespeareDescription));
 		});
 	}
 
