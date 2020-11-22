@@ -17,8 +17,8 @@ import org.mockito.Mockito;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static com.tl.pokemon.App.POKEMON_RESOURCE;
-import static com.tl.pokemon.App.SHAKESPEARE_TRANSLATION_RESOURCE;
+import static com.tl.pokemon.repository.PokemonRepository.POKEMON_RESOURCE;
+import static com.tl.pokemon.repository.ShakespeareTranslationRepository.SHAKESPEARE_TRANSLATION_RESOURCE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
