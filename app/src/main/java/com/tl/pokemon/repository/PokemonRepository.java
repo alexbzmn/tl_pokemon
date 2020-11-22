@@ -23,7 +23,7 @@ public final class PokemonRepository {
 		this.mapper = mapper;
 	}
 
-	public List<String> getPokemonDescriptionByName(String name) throws Exception {
+	public List<String> getPokemonDescriptionsByName(String name) throws Exception {
 		final var pokemonInfo = httpClient.send(HttpRequest.newBuilder()
 			.uri(URI.create(POKEMON_RESOURCE + name))
 			.GET()

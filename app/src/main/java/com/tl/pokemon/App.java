@@ -13,8 +13,6 @@ import com.tl.pokemon.exception.ServiceIsUnavailableException;
 import com.tl.pokemon.repository.PokemonRepository;
 import com.tl.pokemon.repository.ShakespeareTranslationRepository;
 
-import spark.Spark;
-
 import static com.tl.pokemon.util.CheckedExceptionWrapper.runRethrowing;
 import static spark.Spark.*;
 
@@ -34,10 +32,7 @@ public final class App {
 	}
 
 	public void registerResources() {
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			Spark.stop();
-			Spark.awaitStop();
-		}));
+		Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
 
 		exception(NotFoundException.class, (exception, request, response) -> {
 			response.status(404);
@@ -52,14 +47,14 @@ public final class App {
 		port(8080);
 		get("/pokemon/:name", (req, res) -> {
 			final var pokemonName = req.params("name");
-			final var descriptions = descriptionsCache.computeIfAbsent(
+			final var pokemonDescriptions = descriptionsCache.computeIfAbsent(
 				pokemonName,
-				__ -> runRethrowing((() -> pokemonRepository.getPokemonDescriptionByName(pokemonName))));
-			if (descriptions.isEmpty()) {
+				__ -> runRethrowing((() -> pokemonRepository.getPokemonDescriptionsByName(pokemonName))));
+			if (pokemonDescriptions.isEmpty()) {
 				throw new NotFoundException("Descriptions don't exist for this pokemon");
 			}
 
-			final var randomlyPickedDescription = descriptions.get(ThreadLocalRandom.current().nextInt(descriptions.size()));
+			final var randomlyPickedDescription = pokemonDescriptions.get(ThreadLocalRandom.current().nextInt(pokemonDescriptions.size()));
 			return shakespeareCache.computeIfAbsent(
 				randomlyPickedDescription,
 				__ -> runRethrowing(() -> translationRepository.translate(randomlyPickedDescription)));
@@ -67,8 +62,8 @@ public final class App {
 	}
 
 	public void shutdown() {
-		Spark.stop();
-		Spark.awaitStop();
+		stop();
+		awaitStop();
 	}
 
 	public static void main(String[] args) {
