@@ -1,15 +1,20 @@
 # Pokemon description app
 
+**N.B.**: Many descriptions per pokemon can be retrieved using the api, and the app is picking one at random. 
+Normally, I would avoid such an implicit behaviour and double check the requirements, but because I was doing this challenge on Sunday evening, I didn't have such possibility. Please note.
+
+Also, the translation service (free version) has rate limiting restricting only to several calls per hour, please mind when testing.
+
 ## Running the app
 Before you do, **please install the latest Docker version**
 
 
-### Using pre-compiled binaries
+### Running using pre-compiled binaries
 Execute the app source root directory:
 - `docker build --tag pokemon .`
 - `docker run --publish 5000:5000 pokemon`
 
-### Compiling yourself
+### Running from sources (compiling yourself)
 **If you decide to compile yourself, you'd require java 11 installed and JAVA_HOME var pointing to the java binaries folder**
 
 Then follow:
@@ -20,7 +25,7 @@ Then follow:
 - `docker build --tag pokemon .`
 - `docker run --publish 5000:5000 pokemon`
 
-To run tests:
+### Running tests:
 `./gradlew clean test`
 
 ## Further improvements
