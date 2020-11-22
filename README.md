@@ -13,11 +13,11 @@ Execute the app source root directory:
 If you decide to compile yourself, you'd require java 11 installed
 Then follow:
 
-- `./gradlew clean copyJarToBin`
+- `./gradlew clean shadowJar`
 - `docker build --tag pokemon .`
 - `docker run --publish 8080:8080 pokemon`
 
-**Further improvements**
+##Further improvements
 - further segregate domain and responsibilities, decouple exception handling from pokemon repository
 - make contract stronger by using micro types where possible - e.g. pokemon name string should become its own micro type to utilise type checking in compilation time
 - make handling timeouts and other remote errors more robust
