@@ -11,25 +11,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tl.pokemon.exception.NotFoundException;
+import com.tl.pokemon.exception.ServiceIsUnavailableException;
 
 import spark.Spark;
 
 import static com.tl.pokemon.util.CheckedExceptionWrapper.runRethrowing;
 import static java.net.http.HttpResponse.BodyHandlers;
-import static spark.Spark.get;
-import static spark.Spark.port;
+import static spark.Spark.*;
 
 public final class App {
 
 	public static final String POKEMON_RESOURCE = "https://pokeapi.co/api/v2/pokemon/";
-
 	public static final String SHAKESPEARE_TRANSLATION_RESOURCE = "https://api.funtranslations.com/translate/shakespeare.json";
 
 	private final HttpClient httpClient;
-
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	private final Map<String, List<String>> descriptionsCache = new ConcurrentHashMap<>();
+	private final Map<String, String> shakespeareCache = new ConcurrentHashMap<>();
 
 	public App(HttpClient httpClient) {
 		this.httpClient = httpClient;
@@ -41,29 +41,35 @@ public final class App {
 			.GET()
 			.build(), BodyHandlers.ofString());
 
-		final var pokemonSpeciesUrl = mapper.readTree(pokemonInfo.body()).get("species").get("url").asText();
+		if (pokemonInfo.statusCode() == 404) {
+			throw new NotFoundException("Pokemon doesn't exist");
+		} else if (pokemonInfo.statusCode() == 500) {
+			throw new ServiceIsUnavailableException("Remote service error, please try later");
+		} else if (pokemonInfo.statusCode() != 200) {
+			throw new IllegalStateException();
+		}
 
+		final var pokemonSpeciesUrl = mapper.readTree(pokemonInfo.body()).get("species").get("url").asText();
 		final var pokemonSpecies = httpClient.send(HttpRequest.newBuilder()
 			.uri(URI.create(pokemonSpeciesUrl))
 			.GET()
 			.build(), BodyHandlers.ofString());
 
-		final var descriptions = mapper.readTree(pokemonSpecies.body()).get("flavor_text_entries");
-		final var list = new ArrayList<String>();
-		descriptions.iterator().forEachRemaining(desc -> {
-			if (desc.get("language").get("name").asText().equals("en")) {
-				list.add(desc.get("flavor_text").asText());
+		final var descriptions = new ArrayList<String>();
+		mapper.readTree(pokemonSpecies.body()).get("flavor_text_entries").iterator().forEachRemaining(description -> {
+			if (description.get("language").get("name").asText().equals("en")) {
+				descriptions.add(description.get("flavor_text").asText());
 			}
 		});
 
-		return list;
+		return descriptions;
 
 	}
 
-	private String shakespeare(String pokemonDescription) throws Exception {
+	private String translateToShakespeareLanguage(String value) throws Exception {
 		final var translation = httpClient.send(HttpRequest.newBuilder()
 			.uri(URI.create(SHAKESPEARE_TRANSLATION_RESOURCE))
-			.POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(Map.of("text", pokemonDescription))))
+			.POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(Map.of("text", value))))
 			.build(), BodyHandlers.ofString());
 
 		return mapper.readTree(translation.body()).get("contents").get("translated").asText();
@@ -80,12 +86,28 @@ public final class App {
 			Spark.awaitStop();
 		}));
 
+		exception(NotFoundException.class, (exception, request, response) -> {
+			response.status(404);
+			response.body(exception.getMessage());
+		});
+
+		exception(ServiceIsUnavailableException.class, (exception, request, response) -> {
+			response.status(500);
+			response.body(exception.getMessage());
+		});
+
 		port(8080);
 		get("/pokemon/:name", (req, res) -> {
 			final var pokemonName = req.params("name");
 			final var descriptions = descriptionsCache.computeIfAbsent(pokemonName, __ -> runRethrowing((() -> retrieveDescription(pokemonName))));
+			if (descriptions.isEmpty()) {
+				throw new NotFoundException("Descriptions don't exist for this pokemon");
+			}
+
 			final var randomlyPickedDescription = descriptions.get(ThreadLocalRandom.current().nextInt(descriptions.size()));
-			return shakespeare(randomlyPickedDescription);
+			return shakespeareCache.computeIfAbsent(
+				randomlyPickedDescription,
+				__ -> runRethrowing(() -> translateToShakespeareLanguage(randomlyPickedDescription)));
 		});
 	}
 
