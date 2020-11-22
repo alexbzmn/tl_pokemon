@@ -76,7 +76,7 @@ class AppTest {
 
 		// when
 		final var result = client.send(
-			HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/pokemon/charizard")).GET().build(),
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/charizard")).GET().build(),
 			HttpResponse.BodyHandlers.ofString());
 
 		// then
@@ -98,7 +98,7 @@ class AppTest {
 
 		// when
 		final var result = client.send(
-			HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/pokemon/nonexistent")).GET().build(),
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/nonexistent")).GET().build(),
 			HttpResponse.BodyHandlers.ofString());
 
 		// then
@@ -134,15 +134,15 @@ class AppTest {
 
 		// when
 		final var originalCall = client.send(
-			HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/pokemon/charizard")).GET().build(),
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/charizard")).GET().build(),
 			HttpResponse.BodyHandlers.ofString());
 
 		final var cachedFirst = client.send(
-			HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/pokemon/charizard")).GET().build(),
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/charizard")).GET().build(),
 			HttpResponse.BodyHandlers.ofString());
 
 		final var cachedSecond = client.send(
-			HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/pokemon/charizard")).GET().build(),
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/charizard")).GET().build(),
 			HttpResponse.BodyHandlers.ofString());
 
 		// then
@@ -172,7 +172,7 @@ class AppTest {
 
 		// when
 		final var result = client.send(
-			HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/pokemon/charizard")).GET().build(),
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/charizard")).GET().build(),
 			HttpResponse.BodyHandlers.ofString());
 
 		// then
@@ -196,7 +196,7 @@ class AppTest {
 
 		// when
 		final var result = client.send(
-			HttpRequest.newBuilder().uri(URI.create("http://localhost:8080/pokemon/problematicPokemon")).GET().build(),
+			HttpRequest.newBuilder().uri(URI.create("http://localhost:5000/pokemon/problematicPokemon")).GET().build(),
 			HttpResponse.BodyHandlers.ofString());
 
 		// then

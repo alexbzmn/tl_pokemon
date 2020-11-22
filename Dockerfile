@@ -1,4 +1,4 @@
 FROM openjdk:11
 COPY pokemon.jar .
-EXPOSE 8080
+EXPOSE 5000
 ENTRYPOINT ["java", "-jar", "pokemon.jar"]

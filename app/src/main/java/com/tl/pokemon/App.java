@@ -46,7 +46,7 @@ public final class App {
 			response.body(exception.getMessage());
 		});
 
-		port(8080);
+		port(5000);
 		get("/pokemon/:name", (req, res) -> {
 			final var pokemonName = req.params("name");
 			final var pokemonDescriptions = descriptionsCache.computeIfAbsent(

@@ -7,7 +7,7 @@ Before you do, **please install the latest Docker version**
 ### Using pre-compiled binaries
 Execute the app source root directory:
 - `docker build --tag pokemon .`
-- `docker run --publish 8080:8080 pokemon`
+- `docker run --publish 5000:5000 pokemon`
 
 ### Compiling yourself
 **If you decide to compile yourself, you'd require java 11 installed and JAVA_HOME var pointing to the java binaries folder**
@@ -18,7 +18,7 @@ Then follow:
 - `chmod -R 777 ./`
 - `./gradlew clean shadowJar`
 - `docker build --tag pokemon .`
-- `docker run --publish 8080:8080 pokemon`
+- `docker run --publish 5000:5000 pokemon`
 
 To run tests:
 `./gradlew clean test`
