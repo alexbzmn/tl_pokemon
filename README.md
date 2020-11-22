@@ -20,6 +20,9 @@ Then follow:
 - `docker build --tag pokemon .`
 - `docker run --publish 8080:8080 pokemon`
 
+To run tests:
+`./gradlew clean test`
+
 ## Further improvements
 - further segregate domain and responsibilities, decouple exception handling from pokemon repository
 - make the business logic contract stronger by using micro types where possible - e.g. pokemon name string should become its own micro type to utilise type checking in compilation time
