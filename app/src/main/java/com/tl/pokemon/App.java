@@ -46,9 +46,17 @@ public final class App {
 			response.body(exception.getMessage());
 		});
 
+		exception(IllegalArgumentException.class, (exception, request, response) -> {
+			response.status(400);
+			response.body(exception.getMessage());
+		});
+
 		port(5000);
 		get("/pokemon/:name", (req, res) -> {
 			final var pokemonName = req.params("name");
+			if (pokemonName == null || pokemonName.isEmpty()) {
+				throw new IllegalArgumentException("Pokemon name should not be empty");
+			}
 			final var pokemonDescriptions = descriptionsCache.computeIfAbsent(
 				pokemonName,
 				__ -> runRethrowing((() -> pokemonRepository.getPokemonDescriptionsByName(pokemonName))));
