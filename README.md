@@ -10,14 +10,14 @@ Before you do, **please install the latest Docker version**
 
 
 ### Running using pre-compiled binaries
-Execute the app source root directory:
+Execute from the app source root directory:
 - `docker build --tag pokemon .`
 - `docker run --publish 5000:5000 pokemon`
 
 ### Running from sources (compiling yourself)
 **If you decide to compile yourself, you'd require java 11 installed and JAVA_HOME var pointing to the java binaries folder**
 
-Then follow:
+Then run the following:
 
 - `cd to the project folder`
 - `chmod -R 777 ./`
